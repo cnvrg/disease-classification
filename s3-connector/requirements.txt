@@ -1,0 +1,14 @@
+imutils
+cnvrgv2
+boto3
+botocore
+tabulate
+urllib3
+tqdm
+pandas
+numpy
+shutil
+cv2
+tensorflow
+sklearn
+kaggle

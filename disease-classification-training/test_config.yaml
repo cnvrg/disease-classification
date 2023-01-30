@@ -1,0 +1,9 @@
+# cfg file for configuring connector test drivers
+test_arguments:
+  lr: "0.01"
+  epoch: "30"
+  batch_size: "8"
+  model_name: "resnet50"
+  cnvrg_dataset: "none"
+  file_dir: "test.csv"
+  file_dir: "sample_dataset/DailyDelhiClimateMissing.csv"

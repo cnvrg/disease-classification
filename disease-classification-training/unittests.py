@@ -21,13 +21,17 @@ class TestDiseaseClassification(unittest.TestCase):
         self.disease_classification = train_model(
             url=self.test_cfg["lr"],
             token=self.test_cfg["epochs"],
-            org=self.test_cfg["batch_size"],
-            org=self.test_cfg["model_name"]
+            bs=self.test_cfg["batch_size"],
+            model_name=self.test_cfg["model_name"]
+            test_num=sef.test_cfg["test_num"]
         )
 
         self.accuracy_upper_bound = self.test_cfg["accuracy_upper_bound"]
         self.accuracy_lower_bound = self.test_cfg["accuracy_lower_bound"]
-
+        self.specitivity_lower_bound = self.test_cfg["specitivity_lower_bound"]
+        self.specitivity_upper_bound = self.test_cfg["specitivity_upper_bound"]
+        self.sensitivity_lower_bound = self.test_cfg["sensitivity_lower_bound"]
+        self.sensitivity_upper_bound = self.test_cfg["sensitivity_upper_bound"]
 
 class TrainAccError(TestDiseaseClassification):
 
@@ -38,3 +42,29 @@ class TrainAccError(TestDiseaseClassification):
     def __str__(self):
         return "TrainAccError: Model train accuracy/loss is not within acceptable range"
 
+class TrainSpecError(TestDiseaseClassification):
+
+    def train_params(self):
+        """Checks if the specitivity of trained model is within correct bounds"""
+        self.assertTrue(self.specitivity_lower_bound <= self.disease_classification['specitivity'] <= self.specitivity_higher_bound)
+
+    def __str__(self):
+        return "TrainspecError: Model train specitivity is not within acceptable range"
+
+class TrainSenError(TestDiseaseClassification):
+
+    def train_params(self):
+        """Checks if the sensitivity of trained model is within correct bounds"""
+        self.assertTrue(self.sensitivity_lower_bound <= self.disease_classification['sensitivity'] <= self.sensitivity_higher_bound)
+
+    def __str__(self):
+        return "TrainSenError: Model train sensitivity is not within acceptable range"
+
+class SaveModelError(TestDiseaseClassification):
+
+    def test_return_type(self):
+        """Checks if the function returns a model h5 file"""
+        self.assertIsInstance(self.model, h5)
+
+    def __str__(self):
+        return "SaveModelError: Model h5 file not saved, check model output"

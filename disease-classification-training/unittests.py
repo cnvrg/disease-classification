@@ -23,13 +23,13 @@ class TestDiseaseClassification(unittest.TestCase):
             token=self.test_cfg["epochs"],
             bs=self.test_cfg["batch_size"],
             model_name=self.test_cfg["model_name"]
-            test_num=sef.test_cfg["test_num"]
+            train_data_size=sef.test_cfg["test_num"]
         )
 
         self.accuracy_upper_bound = self.test_cfg["accuracy_upper_bound"]
         self.accuracy_lower_bound = self.test_cfg["accuracy_lower_bound"]
-        self.specitivity_lower_bound = self.test_cfg["specitivity_lower_bound"]
-        self.specitivity_upper_bound = self.test_cfg["specitivity_upper_bound"]
+        self.specificity_lower_bound = self.test_cfg["specificity_lower_bound"]
+        self.specificity_upper_bound = self.test_cfg["specificity_upper_bound"]
         self.sensitivity_lower_bound = self.test_cfg["sensitivity_lower_bound"]
         self.sensitivity_upper_bound = self.test_cfg["sensitivity_upper_bound"]
 
@@ -45,11 +45,11 @@ class TrainAccError(TestDiseaseClassification):
 class TrainSpecError(TestDiseaseClassification):
 
     def train_params(self):
-        """Checks if the specitivity of trained model is within correct bounds"""
-        self.assertTrue(self.specitivity_lower_bound <= self.disease_classification['specitivity'] <= self.specitivity_higher_bound)
+        """Checks if the specificity of trained model is within correct bounds"""
+        self.assertTrue(self.specificity_lower_bound <= self.disease_classification['specificity'] <= self.specificity_higher_bound)
 
     def __str__(self):
-        return "TrainspecError: Model train specitivity is not within acceptable range"
+        return "TrainspecError: Model train specificity is not within acceptable range"
 
 class TrainSenError(TestDiseaseClassification):
 

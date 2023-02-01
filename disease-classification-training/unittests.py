@@ -22,8 +22,8 @@ class TestDiseaseClassification(unittest.TestCase):
             url=self.test_cfg["lr"],
             token=self.test_cfg["epochs"],
             bs=self.test_cfg["batch_size"],
-            model_name=self.test_cfg["model_name"]
-            train_data_size=sef.test_cfg["test_num"]
+            model_name=self.test_cfg["model_name"],
+            train_data_size=self.test_cfg["train_data_size"]
         )
 
         self.accuracy_upper_bound = self.test_cfg["accuracy_upper_bound"]

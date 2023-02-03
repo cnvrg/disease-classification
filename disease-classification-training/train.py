@@ -1,9 +1,7 @@
 import os
 import argparse
 import pandas as pd
-import the necessary packages
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
-from tensorflow.keras.applications.resnet50 import ResNet50
 from tensorflow.keras.layers import Activation, Dropout,Dense, Flatten, BatchNormalization, Conv2D, MaxPooling2D, Lambda, Input, AveragePooling2D
 from tensorflow.keras.layers import Dropout
 from tensorflow.keras.layers import Flatten
@@ -64,29 +62,14 @@ def parse_parameters():
         help="""--- batch size for training""",
     )
     parser.add_argument(
-        "--local_dir",
+        "--output_dir",
         action="store",
-        dest="local_dir",
+        dest="output_dir",
         required=False,
         default=cnvrg_workdir,
         help="""--- The path to save the dataset file to ---""",
     )
-    parser.add_argument(
-        "--cnvrg_dataset",
-        action="store",
-        dest="cnvrg_dataset",
-        required=False,
-        default="None",
-        help="""--- the name of the cnvrg dataset to store in ---""",
-    )
-    parser.add_argument(
-        "--file_name",
-        action="store",
-        dest="file_name",
-        required=False,
-        default="disease_classification.csv",
-        help="""--- name of the dataset csv file ---""",
-    )
+
     return parser.parse_args()
 
 
@@ -125,19 +108,31 @@ kaggle.api.dataset_download_files('bachrr/covid-chest-xray', path='./input', unz
 kaggle.api.dataset_download_files('paultimothymooney/chest-xray-pneumonia', path='./input', unzip=True)
 '''
 
-def train_model(lr, epochs,batch):
+def train_model(lr, epochs, batch, model_name, output_dir):
+    if model_name == "vgg16":
+        from tf.keras.applications.vgg16 import VGG16
+        baseModel = VGG16(weights="imagenet", include_top=False, input_tensor=Input(shape=(224, 224, 3)))
+
+    if model_name == "resnet50":
+        from tf.keras.applications.resnet50 import ResNet50
+        baseModel = ResNet50(weights="imagenet", include_top=False, input_tensor=Input(shape=(224, 224, 3)))
+
+    if model_name == "resnet101":
+        from tf.keras.applications.resnet import ResNet101
+        baseModel = ResNet101(weights="imagenet", include_top=False, input_tensor=Input(shape=(224, 224, 3)))
+
     dataset_path = './dataset'
     current_directory = os.getcwd()
 
     final_directory = os.path.join(current_directory, r'dataset/covid')
     if not os.path.exists(final_directory):
-    os.makedirs(final_directory)
+        os.makedirs(final_directory)
     
     covid_dataset_path = '../input/covid-chest-xray'
 
     final_directory = os.path.join(current_directory, r'dataset/normal')
     if not os.path.exists(final_directory):
-    os.makedirs(final_directory)
+        os.makedirs(final_directory)
 
     covid_dataset_path = '.'
 
@@ -273,9 +268,7 @@ def train_model(lr, epochs,batch):
     # initialize the training data augmentation object
     trainAug = ImageDataGenerator(rotation_range=15, fill_mode="nearest")
 
-    # load the ResNet50 network, ensuring the head FC layer sets are left
-    # off
-    baseModel = ResNet50(weights="imagenet", include_top=False, input_tensor=Input(shape=(224, 224, 3)))
+ 
     # construct the head of the model that will be placed on top of the
     # the base model
     headModel = baseModel.output
@@ -307,7 +300,7 @@ def train_model(lr, epochs,batch):
         epochs=epochs)
 
     # save model
-    model.save('/kaggle/working/covid_resnet50.h5')
+    model.save(output_dir + '/' + model_name + '.h5')
 
     # evaluation
     # make predictions on the testing set
@@ -318,7 +311,10 @@ def train_model(lr, epochs,batch):
     predIdxs = np.argmax(predIdxs, axis=1)
     # show a nicely formatted classification report
     print(classification_report(testY.argmax(axis=1), predIdxs, target_names=lb.classes_))
-
+    # convert classification report to dataframe
+    report = classification_report(testY.argmax(axis=1), predIdxs, target_names=lb.classes_, output_dict=True)
+    classification_df = pd.DataFrame(report).transpose()
+    
     # compute the confusion matrix and and use it to derive the raw
     # accuracy, sensitivity, and specificity
     cm = confusion_matrix(testY.argmax(axis=1), predIdxs)
@@ -331,8 +327,10 @@ def train_model(lr, epochs,batch):
     print("acc: {:.4f}".format(acc))
     print("sensitivity: {:.4f}".format(sensitivity))
     print("specificity: {:.4f}".format(specificity))
+    # convert acc, sensitivity, specificity to dataframe
+    confusion_df = pd.DataFrame([[acc, sensitivity, specificity]], columns=['acc', 'sensitivity', 'specificity']) 
 
-
+    return classification_df, confusion_df
 
 
 def main():
@@ -342,30 +340,15 @@ def main():
             raise IncorrectDirectoryError()
     # return pandas dataframe from custom query
     disease_classification = disease_classification(url=args.url, token=args.token, org=args.org)
-    df = disease_classification.get_data(
+    classification_df, confusion_df = disease_classification.train_model(
         args.lr,
         args.epoch,
         args.batch_size,
         args.model_name,
+        args.output_dir
     )
-    df.to_csv(args.local_dir + "/" + args.file_name, index=False)
-   
-    if str(args.cnvrg_dataset).lower() != "none":
-        # cnvrgv2 dependencies have version mismatch issue with disease_classification_client so 
-        # the library is imported here
-        from cnvrgv2 import Cnvrg
-
-        cnvrg = Cnvrg()
-        ds = cnvrg.datasets.get(args.cnvrg_dataset)
-        try:
-            ds.reload()
-        except:
-            print("The provided data was not found")
-            print(f"Creating a new data named {args.cnvrg_dataset}")
-            ds = cnvrg.datasets.create(name=args.cnvrg_dataset)
-        print("Uploading files to Cnvrg")
-        os.chdir(args.local_dir)
-        ds.put_files(paths=[args.file_name])
+    classification_df.to_csv(args.output_dir + '/classification.csv', index=False)
+    confusion_df.to_csv(args.output_dir + '/confusion_df.csv', index=False)
 
 
 if __name__ == "__main__":

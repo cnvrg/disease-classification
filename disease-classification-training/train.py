@@ -23,7 +23,7 @@ import random
 import shutil
 import cv2
 import os
-import kaggle
+# import kaggle
 
 cnvrg_workdir = os.environ.get("CNVRG_WORKDIR", "/cnvrg")
 
@@ -262,15 +262,13 @@ def train_model(lr, epochs, batch, model_name, output_dir):
     lb = LabelBinarizer()
     labels = lb.fit_transform(labels)
     labels = to_categorical(labels)
-    # partition the data into training and testing splits using 80% of
-    # the data for training and the remaining 20% for testing
+    # 80/20 partition for train and test
     (trainX, testX, trainY, testY) = train_test_split(data, labels, test_size=0.20, stratify=labels, random_state=42)
     # initialize the training data augmentation object
     trainAug = ImageDataGenerator(rotation_range=15, fill_mode="nearest")
 
  
-    # construct the head of the model that will be placed on top of the
-    # the base model
+    # construct the head of the model from the base model given by the user
     headModel = baseModel.output
     headModel = AveragePooling2D(pool_size=(4, 4))(headModel)
     headModel = Flatten(name="flatten")(headModel)
@@ -302,9 +300,7 @@ def train_model(lr, epochs, batch, model_name, output_dir):
     # save model
     model.save(output_dir + '/' + model_name + '.h5')
 
-    # evaluation
-    # make predictions on the testing set
-    print("[INFO] evaluating network...")
+    # evaluation on test
     predIdxs = model.predict(testX, batch_size=batch)
     # for each image in the testing set we need to find the index of the
     # label with corresponding largest predicted probability

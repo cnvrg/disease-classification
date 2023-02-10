@@ -318,11 +318,11 @@ def train_model(lr, epochs, batch, model_name, output_dir):
     acc = (cm[0, 0] + cm[1, 1]) / total
     sensitivity = cm[0, 0] / (cm[0, 0] + cm[0, 1])
     specificity = cm[1, 1] / (cm[1, 0] + cm[1, 1])
-    # show the confusion matrix, accuracy, sensitivity, and specificity
-    print(cm)
-    print("acc: {:.4f}".format(acc))
-    print("sensitivity: {:.4f}".format(sensitivity))
-    print("specificity: {:.4f}".format(specificity))
+    # print the confusion matrix, accuracy, sensitivity, and specificity
+    # print(cm)
+    # print("acc: {:.4f}".format(acc))
+    # print("sensitivity: {:.4f}".format(sensitivity))
+    # print("specificity: {:.4f}".format(specificity))
     # convert acc, sensitivity, specificity to dataframe
     confusion_df = pd.DataFrame([[acc, sensitivity, specificity]], columns=['acc', 'sensitivity', 'specificity']) 
 

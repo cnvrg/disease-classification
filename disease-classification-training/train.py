@@ -331,18 +331,19 @@ def train_model(lr, epochs, batch, model_name, output_dir):
 
 def main():
     args = parse_parameters()
-    if str(args.cnvrg_dataset).lower() != "none":
+    if str(args.output_dir).lower() != "none":
         if not os.path.exists(args.local_dir):
             raise IncorrectDirectoryError()
-    # return pandas dataframe from custom query
-    disease_classification = disease_classification(url=args.url, token=args.token, org=args.org)
-    classification_df, confusion_df = disease_classification.train_model(
+
+    # return two pandas dataframe from custom query
+    classification_df, confusion_df = train_model(
         args.lr,
         args.epoch,
         args.batch_size,
         args.model_name,
         args.output_dir
     )
+
     classification_df.to_csv(args.output_dir + '/classification.csv', index=False)
     confusion_df.to_csv(args.output_dir + '/confusion_df.csv', index=False)
 

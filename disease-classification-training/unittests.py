@@ -8,6 +8,9 @@ from train import train_model
 from yaml.loader import SafeLoader
 
 YAML_ARG_TO_TEST = 'test_arguments'
+RANDOM_SEED = 42
+
+np.random.seed(RANDOM_SEED)
 
 class TestDiseaseClassification(unittest.TestCase):
     def setUp(self) -> None:
